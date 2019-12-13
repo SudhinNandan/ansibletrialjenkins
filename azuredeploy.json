@@ -17,7 +17,7 @@
         },
         "authenticationType": {
             "type": "string",
-            "defaultValue": "sshPublicKey",
+            "defaultValue": "password",
             "allowedValues": [
                 "sshPublicKey",
                 "password"
@@ -96,15 +96,8 @@
         "subnetAddressPrefix": "10.1.0.0/24",
         "addressPrefix": "10.1.0.0/16",
         "linuxConfiguration": {
-            "disablePasswordAuthentication": true,
-            "ssh": {
-                "publicKeys": [
-                    {
-                        "path": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
-                        "keyData": "[parameters('adminPasswordOrKey')]"
-                    }
-                ]
-            }
+            "disablePasswordAuthentication": false
+            
         }
     },
     "resources": [
@@ -143,23 +136,7 @@
             "apiVersion": "2019-02-01",
             "name": "[parameters('networkSecurityGroupName')]",
             "location": "[parameters('location')]",
-            "properties": {
-                "securityRules": [
-                    {
-                        "name": "SSH",
-                        "properties": {
-                            "priority": 1000,
-                            "protocol": "TCP",
-                            "access": "Allow",
-                            "direction": "Inbound",
-                            "sourceAddressPrefix": "*",
-                            "sourcePortRange": "*",
-                            "destinationAddressPrefix": "*",
-                            "destinationPortRange": "22"
-                        }
-                    }
-                ]
-            }
+            
         },
         {
             "type": "Microsoft.Network/virtualNetworks",
@@ -239,7 +216,7 @@
                     "computerName": "[parameters('vmName')]",
                     "adminUsername": "[parameters('adminUsername')]",
                     "adminPassword": "[parameters('adminPasswordOrKey')]",
-                    "linuxConfiguration": "[if(equals(parameters('authenticationType'), 'password'), json('null'), variables('linuxConfiguration'))]"
+                    
                 }
             }
         }
@@ -253,9 +230,6 @@
             "type": "string",
             "value": "[reference(variables('publicIPAddressName')).dnsSettings.fqdn]"
         },
-        "sshCommand": {
-            "type": "string",
-            "value": "[concat('ssh ', parameters('adminUsername'), '@', reference(variables('publicIPAddressName')).dnsSettings.fqdn)]"
-        }
+        
     }
 }
